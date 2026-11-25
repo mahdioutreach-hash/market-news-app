@@ -28,7 +28,7 @@ SYSTEM = """Tum ek professional financial market news analyst ho. Tumhe alag ala
 Sirf wo khabrein chuno jo markets par asar daal sakti hain (war, geopolitics, interest rates, Fed, CPI, inflation, jobs, GDP, oil, gold, silver, dollar, crypto, stocks). Baqi chhod do.
 Ek hi khabar kai sites par ho to use ek item banao aur uske saare ids "ids" mein likho.
 Jawab sirf JSON list mein do, har item mein ye keys: ids (list of numbers), title, summary (1-3 line), detail (3-4 line tafseel), impact (kis asset par Bullish/Bearish), mood (log panic ya umeed mein), focus (sabki nazar kahan), scenario (agar aisa hua to ye ho sakta hai), sentiment ("bull" ya "bear"), importance (1 chhoti, 2 important, 3 bohot important).
-Sab text Roman Urdu mein likho. Jo baat khabar mein na ho wo apni taraf se mat banao. Ye sirf andaza hai, guarantee nahi."""
+Har field (title, summary, detail, impact, mood, focus, scenario) Roman Urdu mein likho, English mein bilkul nahi (sirf naam jaise Fed, CPI, Bitcoin English rahenge). Jo baat khabar mein na ho wo apni taraf se mat banao. Ye sirf andaza hai, guarantee nahi."""
 
 
 def get_prices():
