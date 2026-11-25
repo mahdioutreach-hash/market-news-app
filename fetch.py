@@ -1,4 +1,4 @@
-import os, json, hashlib, calendar
+import os, re, json, hashlib, calendar
 from datetime import datetime, timezone, timedelta
 from urllib.parse import quote
 
@@ -24,11 +24,10 @@ MAX_NEW = 30      # ek run mein AI ko zyada se zyada itni nayi khabrein
 KEEP_NEWS = 40    # Firestore mein itni khabrein rakho
 KEEP_DAYS = 3
 
-SYSTEM = """Tum ek professional financial market news analyst ho. Tumhe alag alag bade news sites ki nayi khabron ki list milegi.
-Sirf wo khabrein chuno jo markets par asar daal sakti hain (war, geopolitics, interest rates, Fed, CPI, inflation, jobs, GDP, oil, gold, silver, dollar, crypto, stocks). Baqi chhod do.
-Ek hi khabar kai sites par ho to use ek item banao aur uske saare ids "ids" mein likho.
-Jawab sirf JSON list mein do, har item mein ye keys: ids (list of numbers), title, summary (1-3 line), detail (3-4 line tafseel), impact (kis asset par Bullish/Bearish), mood (log panic ya umeed mein), focus (sabki nazar kahan), scenario (agar aisa hua to ye ho sakta hai), sentiment ("bull" ya "bear"), importance (1 chhoti, 2 important, 3 bohot important).
-Har field (title, summary, detail, impact, mood, focus, scenario) Roman Urdu mein likho, English mein bilkul nahi (sirf naam jaise Fed, CPI, Bitcoin English rahenge). Jo baat khabar mein na ho wo apni taraf se mat banao. Ye sirf andaza hai, guarantee nahi."""
+SYSTEM = """Tumhe bade news sites ki khabrein milengi (title aur chhota summary). Sirf wo khabrein chuno jo markets se judi hain (war, interest rates, Fed, CPI, inflation, jobs, GDP, oil, gold, silver, dollar, crypto, stocks, bade companies). Baqi chhod do.
+Ek khabar kai sites par ho to ek item banao aur uske saare ids "ids" mein likho.
+Jawab sirf JSON list mein do, har item mein ye keys: ids (list of numbers), title, summary (1-2 line), detail (khabar mein jo likha hai wahi, 2-4 line), market_move (agar khabar mein likha ho ke market, stock ya asset ne kitna move kiya ya kitne waqt mein, to wahi numbers ke saath likho; warna khali string "").
+SAKHT RULE: khabar mein jo likha hai sirf wahi likho. Apni taraf se koi andaza, wajah, analysis, scenario ya number mat likho. Sab text Roman Urdu mein likho (naam jaise Fed, CPI, Bitcoin English rahenge)."""
 
 
 def get_prices():
@@ -64,7 +63,7 @@ def get_items():
                 if ts < cutoff or not title or key in seen_titles:
                     continue
                 seen_titles.add(key)
-                summary = (e.get("summary") or "")[:300]
+                summary = re.sub(r"<[^>]+>", " ", e.get("summary") or "")[:700]
                 items.append({"source": source, "title": title, "summary": summary,
                               "link": e.get("link", ""), "ts": ts})
         except Exception as ex:
@@ -97,15 +96,13 @@ def analyze(items):
         news.append({
             "id": hashlib.sha1(o.get("title", "").encode()).hexdigest()[:12],
             "title": o.get("title", ""), "summary": o.get("summary", ""), "detail": o.get("detail", ""),
-            "impact": o.get("impact", ""), "mood": o.get("mood", ""), "focus": o.get("focus", ""),
-            "scenario": o.get("scenario", ""),
-            "sentiment": "bear" if o.get("sentiment") == "bear" else "bull",
-            "importance": o.get("importance", 1),
+            "market_move": o.get("market_move", ""),
             "sources": sorted({s["source"] for s in src}),
             "ts": max(s["ts"] for s in src).isoformat(),
             "link": src[0]["link"],
         })
     return news
+
 
 
 def main():
