@@ -152,6 +152,9 @@ def main():
             for it, t in zip(new_items, ex.map(lambda i: get_article(i["link"]), new_items)):
                 it["text"] = t
         print("articles with text:", sum(1 for i in new_items if i.get("text")), "of", len(new_items))
+        for src in sorted({i["source"] for i in new_items}):
+            grp = [i for i in new_items if i["source"] == src]
+            print(f"  {src}: {sum(1 for i in grp if i.get('text'))} of {len(grp)} poora article mila")
         try:
             news = analyze(new_items) + news
             seen = (seen + [i["link"] for i in new_items])[-500:]
