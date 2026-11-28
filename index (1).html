@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="ur-Latn">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Market News</title>
+<style>
+:root{box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);
+--bg:#fff;--soft:#f5f6f8;--text:#0b0c0f;--muted:#7a808b;--line:#eceef2;--up:#00a63e;--down:#f2501f;--upbg:#e6f7ed;--downbg:#fdece6;--warn:#b26b00;--warnbg:#fff3dc;--bothead:#101114;--botface:#2b2e35;--eye:#18e06a;color-scheme:light}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#000;--soft:#15171b;--text:#f4f5f7;--muted:#8b919c;--line:#22252b;--up:#1fd566;--down:#ff6a3d;--upbg:#0c2a18;--downbg:#33170d;--warn:#ffb340;--warnbg:#2f2208;--bothead:#f1f2f4;--botface:#16181c;--eye:#18e06a;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#000;--soft:#15171b;--text:#f4f5f7;--muted:#8b919c;--line:#22252b;--up:#1fd566;--down:#ff6a3d;--upbg:#0c2a18;--downbg:#33170d;--warn:#ffb340;--warnbg:#2f2208;--bothead:#f1f2f4;--botface:#16181c;--eye:#18e06a;color-scheme:dark}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--text);font-family:-apple-system,"SF Pro Display","Inter",Roboto,"Segoe UI",system-ui,sans-serif;line-height:1.4;-webkit-font-smoothing:antialiased;overflow-x:hidden}
+.app{max-width:520px;margin:0 auto;min-height:100vh;padding:0 20px 110px}
+.num{font-variant-numeric:tabular-nums}
+@keyframes rise{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+@keyframes pop{from{opacity:0;transform:scale(.9)}to{opacity:1;transform:none}}
+@keyframes draw{to{stroke-dashoffset:0}}
+@keyframes fadein{from{opacity:0}to{opacity:1}}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+@keyframes sheet{from{transform:translateY(100%)}to{transform:none}}
+@keyframes dot{0%,80%,100%{transform:scale(.5);opacity:.4}40%{transform:scale(1);opacity:1}}
+.in{opacity:0;animation:rise .55s cubic-bezier(.2,.8,.2,1) forwards;animation-delay:calc(var(--i,0)*55ms)}
+.up{color:var(--up)}.down{color:var(--down)}
+header{padding:22px 0 6px;display:flex;justify-content:space-between;align-items:flex-start}
+h1{margin:0;font-size:32px;font-weight:700;letter-spacing:-.8px}
+.date{color:var(--muted);font-size:13px;margin-top:2px}
+.demo{font-size:10px;font-weight:700;letter-spacing:.5px;color:var(--warn);background:var(--warnbg);padding:4px 9px;border-radius:99px;margin-top:8px}
+.hero{padding:14px 0 6px}
+.hn{font-size:14px;color:var(--muted);font-weight:600}
+.hp{font-size:40px;font-weight:700;letter-spacing:-1.2px;margin:2px 0}
+.hc{font-size:14px;font-weight:600}.hc span{color:var(--muted);font-weight:500;margin-left:6px}
+.chart{width:100%;height:150px;margin:14px 0 6px;display:block;overflow:visible}
+.chart .ln{fill:none;stroke:currentColor;stroke-width:2.2;stroke-linejoin:round;stroke-linecap:round;vector-effect:non-scaling-stroke;stroke-dasharray:1;stroke-dashoffset:1;animation:draw 1.1s ease forwards}
+.chart .ar{opacity:0;animation:fadein .9s ease .5s forwards}
+.tfs{display:flex;justify-content:space-between;border-bottom:1px solid var(--line);padding-bottom:12px}
+.tf{border:0;background:none;color:var(--muted);font-weight:700;font-size:13px;padding:7px 16px;border-radius:99px;cursor:pointer;transition:all .25s}
+.tf.on{background:var(--text);color:var(--bg)}
+.sec{font-size:18px;font-weight:700;margin:24px 0 4px}
+.wr{display:grid;grid-template-columns:1fr 74px 92px;align-items:center;gap:10px;padding:14px 0;border-bottom:1px solid var(--line);cursor:pointer;transition:background .2s}
+.wr:active{background:var(--soft)}
+.wr b{font-size:15px;font-weight:600;display:block}.wr small{color:var(--muted);font-size:12px}
+.wr .r{text-align:right}.wr .r b{font-size:15px}
+.sp{width:74px;height:28px;display:block;overflow:visible}
+.sp path{fill:none;stroke:currentColor;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round;vector-effect:non-scaling-stroke;stroke-dasharray:1;stroke-dashoffset:1;animation:draw 1s ease forwards;animation-delay:calc(var(--i,0)*70ms + .2s)}
+.pill{display:inline-block;font-size:12px;font-weight:700;padding:3px 9px;border-radius:7px;color:#fff;margin-top:3px;animation:pop .4s ease both}
+.pill.up{background:var(--up);color:#fff}.pill.down{background:var(--down);color:#fff}
+.tag{display:inline-block;font-size:11px;font-weight:700;padding:3px 9px;border-radius:99px}
+.tag.bull{background:var(--upbg);color:var(--up)}.tag.bear{background:var(--downbg);color:var(--down)}.tag.hi{background:var(--warnbg);color:var(--warn)}.tag.lo{background:var(--soft);color:var(--muted)}
+.grp{display:flex;align-items:center;gap:8px;font-size:12px;font-weight:700;letter-spacing:.7px;text-transform:uppercase;color:var(--muted);margin:22px 0 2px}
+.grp i{width:7px;height:7px;border-radius:50%;background:var(--up);animation:pulse 1.4s infinite}
+.nr{padding:16px 0;border-bottom:1px solid var(--line);cursor:pointer;transition:background .2s}
+.nr:active{background:var(--soft)}
+.meta{font-size:12px;color:var(--muted);display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:6px}
+.nr h3{margin:0 0 5px;font-size:17px;line-height:1.3;letter-spacing:-.2px}
+.nr p{margin:0 0 10px;font-size:14px;color:var(--muted)}
+.new{background:var(--text);color:var(--bg);font-size:10px;font-weight:800;padding:2px 7px;border-radius:5px;letter-spacing:.5px}
+.tabs{position:relative;display:flex;border-bottom:1px solid var(--line);margin:10px 0 4px}
+.tabs button{flex:1;border:0;background:none;padding:12px 0;font-size:14px;font-weight:600;color:var(--muted);cursor:pointer}
+.tabs button.on{color:var(--text)}
+.tabs .bar{position:absolute;bottom:-1px;left:0;height:2px;width:calc(100%/var(--n));background:var(--text);transition:transform .35s cubic-bezier(.3,.9,.3,1)}
+.er{padding:16px 0;border-bottom:1px solid var(--line);cursor:pointer}
+.er:active{background:var(--soft)}
+.et{display:flex;justify-content:space-between;align-items:center;font-size:12px;color:var(--muted);margin-bottom:5px}
+.dots{color:var(--warn);letter-spacing:2px;font-size:11px}
+.er h3{margin:0 0 3px;font-size:16px}.er p{margin:0;font-size:13px;color:var(--muted)}
+.nm{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:12px}
+.nm div{background:var(--soft);border-radius:12px;padding:9px 11px;font-size:11px;color:var(--muted)}
+.nm b{display:block;font-size:16px;color:var(--text);margin-top:1px}
+.empty{padding:40px 0;text-align:center;color:var(--muted)}
+.note{font-size:11px;color:var(--muted);text-align:center;margin:26px 0 0}
+nav{position:fixed;left:0;right:0;bottom:0;background:var(--bg);border-top:1px solid var(--line);z-index:20;padding-bottom:env(safe-area-inset-bottom,0px)}
+nav .w{max-width:520px;margin:0 auto;display:flex}
+nav button{flex:1;border:0;background:none;color:var(--muted);display:flex;flex-direction:column;align-items:center;gap:3px;padding:10px 0 8px;font-size:11px;font-weight:600;cursor:pointer;transition:color .2s}
+nav svg{width:24px;height:24px;fill:none;stroke:currentColor;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round;transition:transform .3s}
+nav button.on{color:var(--text)}nav button.on svg{transform:translateY(-2px) scale(1.08)}
+.scrim{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:40;display:none;animation:fadein .25s}
+.sheet{position:fixed;left:0;right:0;bottom:0;z-index:50;display:none;animation:sheet .4s cubic-bezier(.2,.9,.25,1)}
+.sheet.open,.scrim.open{display:block}
+.sh{max-width:520px;margin:0 auto;background:var(--bg);border-radius:24px 24px 0 0;height:90vh;display:flex;flex-direction:column}
+.grab{width:38px;height:4px;border-radius:4px;background:var(--line);margin:10px auto 2px}
+.shh{display:flex;align-items:center;gap:10px;padding:8px 20px 12px;border-bottom:1px solid var(--line)}
+.shh h3{margin:0;flex:1;font-size:15px}
+.x{border:0;background:var(--soft);color:var(--text);width:32px;height:32px;border-radius:50%;font-size:15px;cursor:pointer}
+.mini{width:38px;height:38px;flex:0 0 auto}
+.msgs{flex:1;overflow-y:auto;padding:16px 20px 8px}
+.art h2{margin:8px 0 8px;font-size:22px;line-height:1.25;letter-spacing:-.4px}
+.art p{margin:0 0 14px;font-size:15px}
+.kv{border-top:1px solid var(--line);padding:11px 0;font-size:14px}
+.kv b{display:block;font-size:11px;letter-spacing:.6px;text-transform:uppercase;color:var(--muted);margin-bottom:2px}
+.chips{display:flex;gap:8px;overflow-x:auto;padding:8px 20px;scrollbar-width:none;border-top:1px solid var(--line)}.chips::-webkit-scrollbar{display:none}
+.chip{flex:0 0 auto;border:1px solid var(--line);background:var(--bg);color:var(--text);border-radius:99px;padding:8px 14px;font-size:13px;font-weight:600;cursor:pointer;transition:all .15s}
+.chip:active{background:var(--text);color:var(--bg)}
+.b{max-width:86%;padding:10px 14px;border-radius:18px;margin:8px 0;font-size:14.5px;white-space:pre-wrap;word-wrap:break-word;animation:pop .25s ease}
+.b.u{margin-left:auto;background:var(--text);color:var(--bg);border-bottom-right-radius:6px}
+.b.a{background:var(--soft);border-bottom-left-radius:6px}
+.ty span{display:inline-block;width:7px;height:7px;margin:0 2px;border-radius:50%;background:var(--muted);animation:dot 1.2s infinite}.ty span:nth-child(2){animation-delay:.15s}.ty span:nth-child(3){animation-delay:.3s}
+.inp{display:flex;gap:8px;padding:8px 16px calc(12px + env(safe-area-inset-bottom,0px))}
+.inp input{flex:1;min-width:0;border:0;background:var(--soft);color:var(--text);border-radius:99px;padding:13px 18px;font-size:15px;outline:none}
+.send{border:0;border-radius:50%;width:46px;height:46px;background:var(--up);color:#fff;font-size:18px;cursor:pointer;transition:transform .15s}
+.send:active{transform:scale(.9)}.send:disabled{opacity:.5}
+.bot{width:100%;height:100%;overflow:visible;display:block}
+.bot .head{fill:var(--bothead)}.bot .face{fill:var(--botface)}.bot .ear{fill:var(--up)}.bot .stem{stroke:var(--bothead);stroke-width:2.4;stroke-linecap:round}.bot .tipc{fill:var(--eye);animation:pulse 1.4s infinite}
+.bot .eye{fill:var(--eye);transform-box:fill-box;transform-origin:center;animation:blink 4.2s infinite;filter:drop-shadow(0 0 2px var(--eye))}
+.bot .mouth{fill:var(--eye);transform-box:fill-box;transform-origin:center}
+@keyframes blink{0%,94%,100%{transform:scaleY(1)}97%{transform:scaleY(.1)}}
+@keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
+@keyframes talk{from{transform:scaleY(1) scaleX(1)}to{transform:scaleY(2.8) scaleX(.8)}}
+@keyframes hop{0%{transform:none}30%{transform:translateY(-18px) rotate(-7deg)}60%{transform:translateY(0) rotate(5deg)}100%{transform:none}}
+.fab{position:fixed;right:14px;bottom:calc(78px + env(safe-area-inset-bottom,0px));z-index:30;width:62px;height:62px;border:0;background:none;padding:0;cursor:pointer;touch-action:none;user-select:none;-webkit-user-select:none;animation:bob 3s ease-in-out infinite;filter:drop-shadow(0 8px 12px rgba(0,0,0,.25))}
+.fab.hop{animation:hop .7s ease,bob 3s ease-in-out .7s infinite}
+body.talk .mouth{animation:talk .22s infinite alternate}
+.tipb{position:fixed;right:84px;bottom:calc(100px + env(safe-area-inset-bottom,0px));z-index:30;max-width:min(230px,calc(100vw - 110px));background:var(--text);color:var(--bg);border-radius:16px 16px 4px 16px;padding:10px 14px;font-size:13px;line-height:1.4;box-shadow:0 10px 28px rgba(0,0,0,.25);opacity:0;transform:scale(.85);transform-origin:right bottom;pointer-events:none;transition:opacity .3s,transform .35s cubic-bezier(.2,.9,.3,1.3);cursor:pointer}
+.tipb.show{opacity:1;transform:none;pointer-events:auto}
+.back{font-size:16px;font-weight:600;padding:22px 0 4px;cursor:pointer;display:inline-block}.back:active{opacity:.5}
+.pg h2{font-size:26px;margin:10px 0 12px}.pg .lead{font-size:16px;line-height:1.55}.pg p{font-size:15px;line-height:1.6;color:var(--text)}
+.mm{font-size:13px;color:var(--text);background:var(--soft);padding:8px 11px;border-radius:10px;margin:0 0 8px}
+.srcl{font-size:12px;color:var(--muted);margin-left:4px}
+.orig{font-size:12.5px;color:var(--muted);font-style:italic;margin:-4px 0 14px}
+.lnk{display:inline-block;margin:6px 0 0;font-weight:700;font-size:14px;color:var(--text);text-decoration:underline}
+.hint{background:var(--soft);border-radius:16px;padding:14px 16px;font-size:13.5px;color:var(--muted);margin-top:22px}
+@media (prefers-reduced-motion:reduce){*{animation-duration:.01ms!important;animation-delay:0s!important;transition:none!important}}
+</style>
+</head>
+<body>
+<div class="app"><div id="view"></div><div class="note">Ye sirf andaza hai, guarantee nahi. Data tab abhi demo hai.</div></div>
+<nav><div class="w" id="nav">
+<button data-t="mkt" class="on"><svg viewBox="0 0 24 24"><path d="M3 17l5-6 4 3 8-9"/><path d="M3 21h18"/></svg>Market</button>
+<button data-t="news"><svg viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="3"/><path d="M8 9h8M8 13h8M8 17h5"/></svg>Khabrein</button>
+<button data-t="cal"><svg viewBox="0 0 24 24"><rect x="4" y="5" width="16" height="15" rx="3"/><path d="M4 10h16M9 3v4M15 3v4"/></svg>Data</button>
+</div></nav>
+<div class="tipb" id="tip"></div>
+<button class="fab" id="fab" aria-label="AI assistant"><span id="botSlot"></span></button>
+<div class="scrim" id="scrim"></div>
+<div class="sheet" id="sheet"><div class="sh">
+<div class="grab"></div>
+<div class="shh"><div class="mini" id="miniBot"></div><h3 id="shT"></h3><button class="x" id="shX">✕</button></div>
+<div class="msgs" id="msgs"></div>
+<div class="chips" id="chips"></div>
+<div class="inp"><input id="q" placeholder="Yahan sawal likho..." autocomplete="off"><button class="send" id="go">➤</button></div>
+</div></div>
+<script>
+var A=[],news=[],TF=["1W","1M"];
+var cal={
+today:[{n:"Fed Speaker bayan",time:"Aaj",t2:"8:30 PM",st:2,f:"-",p:"-",a:"-",note:"Koi bada data nahi, bayan se mood badal sakta hai."}],
+week:[{n:"US CPI (inflation)",time:"Mangal",t2:"5:30 PM",st:3,f:"3.1%",p:"3.2%",a:"-",note:"Mehngai ka sabse bada number."},
+{n:"US PPI (producer prices)",time:"Budh",t2:"5:30 PM",st:2,f:"2.4%",p:"2.5%",a:"-",note:"Factory level ki mehngai."},
+{n:"FOMC Minutes",time:"Budh",t2:"11:00 PM",st:3,f:"-",p:"-",a:"-",note:"Fed ki pichli meeting ki tafseel."},
+{n:"Retail Sales",time:"Jumeraat",t2:"5:30 PM",st:2,f:"0.3%",p:"0.1%",a:"-",note:"Logon ki kharch karne ki taqat."},
+{n:"Jobless Claims",time:"Jumeraat",t2:"5:30 PM",st:2,f:"225K",p:"231K",a:"-",note:"Naye berozgari claims."}],
+wk:[{n:"Fed officials ke bayan",time:"Weekend",t2:"Din bhar",st:1,f:"-",p:"-",a:"-",note:"Stocks band, lekin bayan se Monday ka mood banta hai."},
+{n:"Crypto weekend move",time:"Weekend",t2:"24/7",st:1,f:"-",p:"-",a:"-",note:"Kam volume mein tez moves ho sakte hain."}]};
+var st={tab:"mkt",ct:1,hero:0,tf:0,chat:null,busy:false};
+function rng(a){return function(){a|=0;a=a+0x6D2B79F5|0;var t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
+function series(seed,up,n){var r=rng(seed),x=[],v=50;for(var i=0;i<n;i++){v+=(r()-.5)*7+(up?.9:-.9);x.push(v)}return x}
+function path(x,w,h,close){var mn=Math.min.apply(0,x),mx=Math.max.apply(0,x),d="";x.forEach(function(v,i){var X=(i/(x.length-1))*w,Y=h-((v-mn)/((mx-mn)||1))*(h-6)-3;d+=(i?"L":"M")+X.toFixed(1)+" "+Y.toFixed(1)+" "});return close?d+"L"+w+" "+h+" L0 "+h+" Z":d}
+function fmt(v){return v.toLocaleString("en-US",{minimumFractionDigits:2,maximumFractionDigits:2})}
+function clock(m){return new Date(Date.now()-m*60000).toLocaleTimeString([],{hour:"2-digit",minute:"2-digit"})}
+function ago(m){return m<60?m+" min pehle":Math.floor(m/60)+" ghante pehle"}
+function dots(n){return "●".repeat(n)+"○".repeat(3-n)}
+function heroChg(a){var abs=a.v-a.v/(1+a.c/100);return (a.c>=0?"▲ ":"▼ ")+fmt(Math.abs(abs))+" ("+(a.c>=0?"+":"")+a.c.toFixed(2)+"%)"}
+function render(){
+if(!A.length){document.getElementById("view").innerHTML='<div class="empty" style="padding-top:140px">'+(st.err||"Data load ho raha hai...")+'</div>';return}
+if(st.detail){renderDetail();return}
+var v=document.getElementById("view"),h="",d=new Date().toLocaleDateString([],{weekday:"long",day:"numeric",month:"long"});
+var title={mkt:"Market",news:"Khabrein",cal:"Data"}[st.tab];
+h+='<header class="in"><div><h1>'+title+'</h1><div class="date">'+d+(st.updated?' \u2022 Update: '+clock(Math.max(0,Math.round((Date.now()-new Date(st.updated))/60000))):'')+'</div></div><span class="demo">BETA</span></header>';
+if(st.tab==="mkt"){
+var a=A[st.hero],up=a.c>=0,cls=up?"up":"down",pts=(a.spark&&a.spark.length>1)?a.spark.slice(-(st.tf===0?7:30)):series(5,up,30);
+h+='<div class="hero in" style="--i:1"><div class="hn">'+a.n+'</div><div class="hp num" id="hp">'+fmt(a.v)+'</div><div class="hc '+cls+' num">'+heroChg(a)+'<span>Aaj</span></div>'
++'<svg class="chart '+cls+'" viewBox="0 0 300 120" preserveAspectRatio="none"><defs><linearGradient id="g1" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="currentColor" stop-opacity=".22"/><stop offset="1" stop-color="currentColor" stop-opacity="0"/></linearGradient></defs><path class="ar" d="'+path(pts,300,120,true)+'" fill="url(#g1)"/><path class="ln" pathLength="1" d="'+path(pts,300,120)+'"/></svg>'
++'<div class="tfs">'+TF.map(function(t,i){return '<button class="tf'+(i===st.tf?" on":"")+'" data-tf="'+i+'">'+t+'</button>'}).join("")+'</div></div>';
+h+='<div class="sec in" style="--i:2">Watchlist</div>';
+A.forEach(function(x,i){var u=x.c>=0;h+='<div class="wr in" style="--i:'+(i+3)+'" data-a="'+i+'"><div><b>'+x.n+'</b><small>'+x.s+'</small></div><svg class="sp '+(u?"up":"down")+'" viewBox="0 0 80 28" preserveAspectRatio="none" style="--i:'+i+'"><path pathLength="1" d="'+path((x.spark&&x.spark.length>1)?x.spark:series(i,u,24),80,28)+'"/></svg><div class="r num"><b>'+fmt(x.v)+'</b><span class="pill '+(u?"up":"down")+'">'+(u?"+":"")+x.c.toFixed(2)+'%</span></div></div>'});
+}else if(st.tab==="news"){
+var g=[["Abhi aayi",0,60],["Kuch ghante pehle",60,360],["Pehle ki",360,9999]],k=2;
+g.forEach(function(gr){var it=news.filter(function(n){return n.m>=gr[1]&&n.m<gr[2]});if(!it.length)return;
+h+='<div class="grp in" style="--i:'+(k++)+'">'+(gr[1]===0?"<i></i>":"")+gr[0]+'</div>';
+it.forEach(function(n){h+='<div class="nr in" style="--i:'+(k++)+'" data-news="'+n.id+'"><div class="meta">'+(n.m<60?'<span class="new">NEW</span>':"")+'<span>'+clock(n.m)+'</span><span>\u2022</span><span>'+ago(n.m)+'</span></div><h3>'+n.t+'</h3><p>'+n.s+'</p>'+(n.mm?'<p class="mm"><b>Khabar mein market:</b> '+n.mm+'</p>':'')+'<span class="tag '+n.type+'">'+(n.type==="bull"?"Bullish":"Bearish")+'</span> <span class="tag '+(n.imp==="Bohot Important"?"hi":"lo")+'">'+n.imp+'</span> <span class="srcl">'+n.src+'</span></div>'})});
+}else{
+var keys=["today","week","wk"],L=["Aaj","Is hafte","Weekend"],items=cal[keys[st.ct]];
+h+='<div class="tabs in" style="--n:3;--i:1">'+L.map(function(l,i){return '<button data-ct="'+i+'" class="'+(i===st.ct?"on":"")+'">'+l+'</button>'}).join("")+'<div class="bar" style="transform:translateX('+st.ct*100+'%)"></div></div>';
+h+=items.map(function(e,i){return '<div class="er in" style="--i:'+(i+2)+'" data-ev="'+keys[st.ct]+':'+i+'"><div class="et"><span>'+e.time+' • '+e.t2+'</span><span class="dots">'+dots(e.st)+'</span></div><h3>'+e.n+'</h3><p>'+e.note+'</p><div class="nm num"><div>Forecast<b>'+e.f+'</b></div><div>Pehle<b>'+e.p+'</b></div><div>Actual<b>'+e.a+'</b></div></div></div>'}).join("");
+}
+v.innerHTML=h;
+if(st.tab==="mkt")countUp(document.getElementById("hp"),A[st.hero].v);
+robotTip()}
+function countUp(el,to){var t0=performance.now();(function f(t){var p=Math.min(1,(t-t0)/700),e=1-Math.pow(1-p,3);el.textContent=fmt(to*(.97+.03*e));if(p<1)requestAnimationFrame(f);else el.textContent=fmt(to)})(t0)}
+document.getElementById("nav").addEventListener("click",function(e){var b=e.target.closest("button");if(!b)return;st.detail=null;st.tab=b.dataset.t;document.querySelectorAll("#nav button").forEach(function(x){x.classList.toggle("on",x===b)});window.scrollTo(0,0);render()});
+document.getElementById("view").addEventListener("click",function(e){
+var t=e.target.closest("[data-tf]");if(t){st.tf=+t.dataset.tf;render();return}
+var w=e.target.closest("[data-a]");if(w){st.hero=+w.dataset.a;st.tf=0;window.scrollTo({top:0,behavior:"smooth"});render();return}
+var c=e.target.closest("[data-ct]");if(c){st.ct=+c.dataset.ct;render();return}
+var bk=e.target.closest("[data-back]");if(bk){st.detail=null;render();return}var n0=e.target.closest("[data-news]");if(n0){st.detail={k:"n",id:n0.dataset.news};window.scrollTo(0,0);render();return}var e0=e.target.closest("[data-ev]");if(e0){var q0=e0.dataset.ev.split(":");st.detail={k:"e",g:q0[0],i:+q0[1]};window.scrollTo(0,0);render();return}
+var n=e.target.closest("[data-news]");if(n){var it=news.filter(function(x){return x.id==n.dataset.news})[0];
+openSheet("Khabar",'<div class="art"><div class="meta"><span class="tag '+it.type+'">'+(it.type==="bull"?"Bullish":"Bearish")+'</span><span>'+clock(it.m)+' • '+ago(it.m)+'</span></div><h2>'+it.t+'</h2><p>'+it.s+'</p><div class="kv"><b>Impact</b>'+it.impact+'</div><div class="kv"><b>Market mood</b>'+it.mood+'</div><div class="kv"><b>Sabki nazar</b>'+it.focus+'</div><div class="kv"><b>Sources</b>'+it.src+'</div></div>',"KHABAR: "+it.t+". "+it.s+" Impact: "+it.impact+" Mood: "+it.mood+" Focus: "+it.focus+" Sources: "+it.src,["Tafseel se batao","Ye kya cheez hai?","Ye kyun hua?","Market kese move kar sakti hai?","Log kya expect kar rahe hain?"]);return}
+var ev=e.target.closest("[data-ev]");if(ev){var p=ev.dataset.ev.split(":"),x=cal[p[0]][+p[1]];
+openSheet("Economic data",'<div class="art"><div class="meta"><span>'+x.time+' • '+x.t2+'</span><span class="dots">'+dots(x.st)+'</span></div><h2>'+x.n+'</h2><p>'+x.note+'</p><div class="nm num"><div>Forecast<b>'+x.f+'</b></div><div>Pehle<b>'+x.p+'</b></div><div>Actual<b>'+x.a+'</b></div></div></div>',"ECONOMIC DATA: "+x.n+", waqt "+x.time+" "+x.t2+", forecast "+x.f+", pichla "+x.p+", actual "+x.a+". "+x.note,["Ye data kya hota hai?","Log kya expect kar rahe hain?","Forecast se zyada ya kam aaya to?","Gold, dollar, stocks par asar?","Aaj ke data ke chances kya hain?"])}});
+function allCtx(){return "KHABREN:\n"+news.map(function(n){return "- "+n.t+": "+n.s+" ("+n.impact+")"}).join("\n")+"\nDATA IS HAFTE:\n"+cal.week.map(function(e){return "- "+e.n+" "+e.time+" forecast "+e.f+" pehle "+e.p}).join("\n")+"\nPRICES:\n"+A.map(function(a){return "- "+a.n+" "+fmt(a.v)+" ("+a.c+"%)"}).join("\n")}
+function openSheet(title,html,ctx,chips){st.chat={ctx:ctx,msgs:[]};document.getElementById("shT").textContent=title;document.getElementById("msgs").innerHTML=html;
+document.getElementById("chips").innerHTML=chips.map(function(x){return '<button class="chip">'+x+'</button>'}).join("");
+document.getElementById("scrim").classList.add("open");document.getElementById("sheet").classList.add("open");document.body.style.overflow="hidden"}
+function closeSheet(){document.getElementById("scrim").classList.remove("open");document.getElementById("sheet").classList.remove("open");document.body.style.overflow=""}
+document.getElementById("scrim").onclick=closeSheet;document.getElementById("shX").onclick=closeSheet;
+document.getElementById("chips").addEventListener("click",function(e){var c=e.target.closest(".chip");if(c)ask(c.textContent)});
+document.getElementById("go").onclick=function(){var i=document.getElementById("q");if(i.value.trim()){ask(i.value.trim());i.value=""}};
+document.getElementById("q").addEventListener("keydown",function(e){if(e.key==="Enter")document.getElementById("go").click()});
+function bubble(c,t){var m=document.getElementById("msgs"),d=document.createElement("div");d.className="b "+c;if(t)d.textContent=t;m.appendChild(d);m.scrollTop=m.scrollHeight;return d}
+function setBot(on){document.body.classList.toggle("talk",on)}
+async function ask(q){
+if(st.busy)return;st.busy=true;setBot(true);document.getElementById("go").disabled=true;
+bubble("u",q);var out=bubble("a","");out.innerHTML='<span class="ty"><span></span><span></span><span></span></span>';
+st.chat.msgs.push({role:"user",content:q});
+var sys="Tum ek market news analyst ho. Jawab Roman Urdu mein do, saaf aur aasan zaban mein, short paragraphs. Context mein wo page, khabar ya data hai jo banda abhi dekh raha hai: sawal usi ke hisab se samjho aur usi ke baare mein jawab do. Agar sawal kisi aur cheez ke baare mein ho to uska bhi seedha jawab do. Apni taraf se numbers mat banao. Ye sirf andaza hai, guarantee nahi. Jab data ya event ke baare mein pucha jaye to batao ke ye kya hai, log kya expect kar rahe hain, forecast se upar ya neeche aane par asar kya ho sakta hai.\n\nCONTEXT:\n"+st.chat.ctx+"\n\nSAWAL:\n";
+var input=st.chat.msgs.map(function(m,i){return i===0?{role:"user",content:sys+m.content}:m});
+try{var sm=window.claude&&await claude.use("sample");
+if(!sm){out.textContent="AI agle step mein jude ga.";st.chat.msgs.pop()}
+else{var r=await sm(input,{cache:false,modelTier:"quick",onText:function(x){out.textContent=x.text;var m=document.getElementById("msgs");m.scrollTop=m.scrollHeight}});out.textContent=r.text;st.chat.msgs.push({role:"assistant",content:r.text})}
+}catch(err){out.textContent=err&&err.code==="not_granted"?"AI ki ijazat nahi mili.":"Kuch masla aaya, dobara try karo.";st.chat.msgs.pop()}
+st.busy=false;setBot(false);document.getElementById("go").disabled=false}
+function botSvg(){return '<svg class="bot" viewBox="0 0 64 64" aria-hidden="true"><line class="stem" x1="32" y1="9" x2="32" y2="16"/><circle class="tipc" cx="32" cy="6" r="3.6"/><rect class="ear" x="4" y="27" width="6" height="13" rx="3"/><rect class="ear" x="54" y="27" width="6" height="13" rx="3"/><rect class="head" x="9" y="15" width="46" height="38" rx="15"/><rect class="face" x="14" y="21" width="36" height="25" rx="11"/><ellipse class="eye" cx="24.5" cy="31.5" rx="3.3" ry="4.2"/><ellipse class="eye" cx="39.5" cy="31.5" rx="3.3" ry="4.2"/><rect class="mouth" x="28" y="38.5" width="8" height="2.4" rx="1.2"/></svg>'}
+function pageInfo(){
+if(st.detail)return detailInfo();
+if(st.tab==="mkt"){var a=A[st.hero];return{name:"Market",tip:"Salaam! <b>"+a.n+"</b> aaj "+(a.c>=0?"+":"")+a.c.toFixed(2)+"% hai. Kisi asset par tap karo ya mujhse pucho.",chips:["Aaj market ka mood kya hai?","Gold kyun gir raha hai?","Bitcoin ka kya scene hai?"],ctx:"Banda abhi Market page par hai aur "+a.n+" ka chart dekh raha hai ("+TF[st.tf]+")."}}
+if(st.tab==="news"){var nw=news.filter(function(n){return n.m<60}).length;return{name:"Khabrein",tip:"Abhi <b>"+nw+" nayi khabar</b> hai. Kisi par tap karo, main samjhata hoon.",chips:["Aaj ki sabse badi khabar?","Market ka mood kya hai?","Kis cheez par nazar rakhun?"],ctx:"Banda abhi Khabrein page par hai (khabron ki timeline dekh raha hai)."}}
+var t=["Aaj koi bada data nahi, magar <b>Fed speaker</b> se mood badal sakta hai.","Is hafte ka sabse bada data <b>US CPI</b> hai. Pucho, log kya expect kar rahe hain.","Weekend par stocks band, lekin <b>crypto</b> chalta hai. Kuch pucho?"],nm=["Data (Aaj)","Data (Is hafte)","Data (Weekend)"];
+return{name:nm[st.ct],tip:t[st.ct],chips:["Is hafte ka sabse bada data?","CPI aaye to kya hoga?","Aaj kaunsa data aane ka chance hai?"],ctx:"Banda abhi economic Data page par hai, tab: "+nm[st.ct]+"."}}
+function curDetail(){var d=st.detail;if(d.k==="n")return news.filter(function(x){return x.id===d.id})[0];return cal[d.g][d.i]}
+function detailInfo(){var d=st.detail,x=curDetail();if(d.k==="n")return{name:x.t,tip:"Ye khabar samajh nahi aayi? <b>Mujhse pucho.</b>",chips:["Tafseel se batao","Ye kya cheez hai?","Ye kyun hua?","Market kese move kar sakti hai?","Log kya expect kar rahe hain?"],ctx:"Banda abhi is khabar ka page padh raha hai. KHABAR: "+x.t+". "+x.s+" "+x.long+" Market move (khabar ke mutabiq): "+(x.mm||"zikr nahi")+" Impact: "+x.impact+" Mood: "+x.mood+" Focus: "+x.focus+" Scenario: "+x.sc+" Sources: "+x.src};
+return{name:x.n,tip:"Ye data samajhna hai? <b>Mujhse pucho.</b>",chips:["Ye data kya hota hai?","Log kya expect kar rahe hain?","Forecast se zyada ya kam aaya to?","Gold, dollar, stocks par asar?"],ctx:"Banda abhi is economic data ka page padh raha hai. DATA: "+x.n+", waqt "+x.time+" "+x.t2+", forecast "+x.f+", pichla "+x.p+", actual "+x.a+". "+x.note}}
+function renderDetail(){var d=st.detail,x=curDetail(),h="";
+if(d.k==="n"){h='<div class="back in" data-back="1">\u2039 Khabrein</div><article class="pg art in" style="--i:1"><div class="meta"><span class="tag '+x.type+'">'+(x.type==="bull"?"Bullish":"Bearish")+'</span><span class="tag '+(x.imp==="Bohot Important"?"hi":"lo")+'">'+x.imp+'</span><span>'+clock(x.m)+' \u2022 '+ago(x.m)+'</span></div><h2>'+x.t+'</h2>'+(x.orig?'<div class="orig">'+x.orig+'</div>':'')+'<p class="lead">'+x.s+'</p>'+(x.long?x.long.split('\n').filter(Boolean).map(function(p){return '<p>'+p+'</p>'}).join(''):'')+(x.mm?'<div class="kv"><b>Khabar mein market ka move</b>'+x.mm+'</div>':'')+'<div class="kv"><b>Impact (andaza)</b>'+x.impact+'</div><div class="kv"><b>Market mood</b>'+x.mood+'</div><div class="kv"><b>Sabki nazar</b>'+x.focus+'</div><div class="kv"><b>Scenario (andaza)</b>'+x.sc+'</div><div class="kv"><b>Sources</b>'+x.src+'</div>'+(x.link?'<a class="lnk" href="'+x.link+'" target="_blank" rel="noopener">Asal khabar kholo \u203a</a>':'')+'<div class="hint">Kuch samajh nahi aaya? Robot par tap karo aur is khabar ke baare mein (ya kisi bhi cheez ke baare mein) pucho.</div></article>'}
+else{h='<div class="back in" data-back="1">\u2039 Data</div><article class="pg art in" style="--i:1"><div class="meta"><span>'+x.time+' \u2022 '+x.t2+'</span><span class="dots">'+dots(x.st)+'</span></div><h2>'+x.n+'</h2><p class="lead">'+x.note+'</p><div class="nm num"><div>Forecast<b>'+x.f+'</b></div><div>Pehle<b>'+x.p+'</b></div><div>Actual<b>'+x.a+'</b></div></div><div class="kv" style="margin-top:18px"><b>Scenario (andaza)</b>Actual number forecast se zyada aaye to dollar mazboot ho sakta hai aur gold/stocks par dabao aa sakta hai. Kam aaye to aksar ulta hota hai.</div><div class="hint">Kuch samajh nahi aaya? Robot par tap karo aur is data ke baare mein (ya kisi bhi cheez ke baare mein) pucho.</div></article>'}
+document.getElementById("view").innerHTML=h;robotTip()}
+var tipTimer;
+function placeTip(){var t=document.getElementById("tip"),r=document.getElementById("fab").getBoundingClientRect(),right=(r.left+r.width/2)>innerWidth/2;if(r.top<120){t.style.bottom="auto";t.style.top=(r.bottom+8)+"px"}else{t.style.top="auto";t.style.bottom=(innerHeight-r.top+8)+"px"}if(right){t.style.left="auto";t.style.right=Math.max(8,innerWidth-r.right)+"px";t.style.transformOrigin="right bottom"}else{t.style.right="auto";t.style.left=Math.max(8,r.left)+"px";t.style.transformOrigin="left bottom"}}
+function robotTip(){var p=pageInfo(),t=document.getElementById("tip"),f=document.getElementById("fab");t.innerHTML=p.tip;placeTip();t.classList.remove("show");f.classList.remove("hop");void f.offsetWidth;f.classList.add("hop");setTimeout(function(){t.classList.add("show")},350);clearTimeout(tipTimer);tipTimer=setTimeout(function(){t.classList.remove("show")},7500)}
+function botOpen(){var p=pageInfo();document.getElementById("tip").classList.remove("show");
+openSheet("Market AI",'<div class="art"><p>Aap abhi <b>'+p.name+'</b> page par ho. Is page ke baare mein pucho ya koi bhi aur sawal likho.</p></div>',p.ctx+"\n"+allCtx(),p.chips)}
+document.getElementById("tip").onclick=botOpen;
+(function(){var fab=document.getElementById("fab"),d=null;
+fab.addEventListener("pointerdown",function(e){var r=fab.getBoundingClientRect();d={x:e.clientX,y:e.clientY,l:r.left,t:r.top,m:false};try{fab.setPointerCapture(e.pointerId)}catch(x){}});
+fab.addEventListener("pointermove",function(e){if(!d)return;var dx=e.clientX-d.x,dy=e.clientY-d.y;if(!d.m){if(Math.hypot(dx,dy)<6)return;d.m=true;fab.style.animation="none";fab.style.right="auto";fab.style.bottom="auto";document.getElementById("tip").classList.remove("show")}fab.style.left=Math.min(Math.max(d.l+dx,4),innerWidth-66)+"px";fab.style.top=Math.min(Math.max(d.t+dy,4),innerHeight-66)+"px"});
+fab.addEventListener("pointerup",function(){if(!d)return;var m=d.m;d=null;if(!m){botOpen();return}var r=fab.getBoundingClientRect();fab.style.transition="left .3s cubic-bezier(.2,.9,.3,1.2)";fab.style.left=((r.left+r.width/2)<innerWidth/2?10:innerWidth-72)+"px";setTimeout(function(){fab.style.transition="";fab.style.animation=""},320)});
+fab.addEventListener("pointercancel",function(){d=null;fab.style.animation=""})})();
+document.getElementById("botSlot").innerHTML=botSvg();document.getElementById("miniBot").innerHTML=botSvg();
+render();
+var FS="https://firestore.googleapis.com/v1/projects/market-news-4b872/databases/(default)/documents/public/latest";
+function fv(v){if("stringValue" in v)return v.stringValue;if("integerValue" in v)return +v.integerValue;if("doubleValue" in v)return v.doubleValue;if("booleanValue" in v)return v.booleanValue;if("arrayValue" in v)return (v.arrayValue.values||[]).map(fv);if("mapValue" in v){var o={},f=v.mapValue.fields||{};for(var k in f)o[k]=fv(f[k]);return o}return null}
+async function load(){try{var r=await fetch(FS);if(!r.ok)throw new Error(r.status);var j=await r.json(),d={};for(var k in j.fields)d[k]=fv(j.fields[k]);
+A=d.prices||[];news=(d.news||[]).map(function(n){var m=Math.max(0,Math.round((Date.now()-new Date(n.ts))/60000));return{id:n.id,t:n.title,orig:n.orig||"",m:m,imp:n.importance>=3?"Bohot Important":n.importance===2?"Important":"Chhoti",type:n.sentiment==="bear"?"bear":"bull",s:n.summary,long:n.detail,mm:n.market_move||"",impact:n.impact,mood:n.mood,focus:n.focus,sc:n.scenario,src:(n.sources||[]).join(", "),link:n.link||""}});st.updated=d.updatedAt;st.err=null}catch(e){st.err="Data load nahi hua. Internet check karo."}
+render()}
+setInterval(function(){if(!document.hidden)load()},300000);
+load();
+</script>
+</body>
+</html>

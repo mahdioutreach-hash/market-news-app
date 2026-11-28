@@ -2,7 +2,10 @@ import os, re, json, hashlib, calendar
 from datetime import datetime, timezone, timedelta
 from urllib.parse import quote
 
+from concurrent.futures import ThreadPoolExecutor
+
 import feedparser
+import trafilatura
 import requests
 from curl_cffi import requests as cr
 import firebase_admin
@@ -24,10 +27,31 @@ MAX_NEW = 30      # ek run mein AI ko zyada se zyada itni nayi khabrein
 KEEP_NEWS = 40    # Firestore mein itni khabrein rakho
 KEEP_DAYS = 3
 
-SYSTEM = """Tumhe bade news sites ki khabrein milengi (title aur chhota summary). Sirf wo khabrein chuno jo markets se judi hain (war, interest rates, Fed, CPI, inflation, jobs, GDP, oil, gold, silver, dollar, crypto, stocks, bade companies). Baqi chhod do.
+SYSTEM = """Tumhe bade news sites ki khabrein milengi (har khabar ka asal text ya chhota summary). Sirf wo khabrein chuno jo markets se judi hain (war, interest rates, Fed, CPI, inflation, jobs, GDP, oil, gold, silver, dollar, crypto, stocks, bade companies). Baqi chhod do.
 Ek khabar kai sites par ho to ek item banao aur uske saare ids "ids" mein likho.
-Jawab sirf JSON list mein do, har item mein ye keys: ids (list of numbers), title, summary (1-2 line), detail (khabar mein jo likha hai wahi, 2-4 line), market_move (agar khabar mein likha ho ke market, stock ya asset ne kitna move kiya ya kitne waqt mein, to wahi numbers ke saath likho; warna khali string "").
-SAKHT RULE: khabar mein jo likha hai sirf wahi likho. Apni taraf se koi andaza, wajah, analysis, scenario ya number mat likho. Sab text Roman Urdu mein likho (naam jaise Fed, CPI, Bitcoin English rahenge)."""
+Jawab sirf JSON list mein do, har item mein ye keys:
+ids (list of numbers),
+title (Roman Urdu mein saaf headline),
+summary (2-3 line, khabar ka nichod),
+detail (poori khabar Roman Urdu mein news ke andaz mein: kya hua, kis ne kya kaha, numbers, background. Asal text mila ho to kam az kam 5-8 jumle. summary ko dohrao mat),
+market_move (agar khabar mein likha ho ke market, stock ya asset ne kitna move kiya ya kitne waqt mein, to wahi numbers ke saath likho, warna khali string),
+impact (kis asset par Bullish ya Bearish),
+mood (log umeed mein hain ya ghabrahat mein),
+focus (abhi sabki nazar kis cheez par hai),
+scenario (agar aisa hua to ye ho sakta hai),
+sentiment ("bull" ya "bear"),
+importance (1 chhoti, 2 important, 3 bohot important).
+RULES: khabar ke facts (naam, numbers, bayanat) sirf diye gaye text se lo, apni taraf se koi number ya bayan mat banao. impact, mood, focus, scenario analysis hain, unhein andaza ke tor par likho. Agar sirf chhota summary mila ho to detail mein utna hi likho jitna maloom hai, bekaar kheench kar lamba mat karo. Sab Roman Urdu mein likho (naam jaise Fed, CPI, Bitcoin English rahenge)."""
+
+
+def get_article(url):
+    try:
+        r = cr.get(url, impersonate="chrome", timeout=12)
+        if r.status_code == 200:
+            return (trafilatura.extract(r.text) or "")[:2500]
+    except Exception as e:
+        print("article fail", url[:60], e)
+    return ""
 
 
 def get_prices():
@@ -73,7 +97,7 @@ def get_items():
 
 
 def analyze(items):
-    lines = [f"[{i}] ({it['source']}) {it['title']} - {it['summary']}" for i, it in enumerate(items)]
+    lines = [f"[{i}] ({it['source']}) {it['title']} - {(it.get('text') or it['summary'])[:1500]}" for i, it in enumerate(items)]
     body = {
         "systemInstruction": {"parts": [{"text": SYSTEM}]},
         "contents": [{"role": "user", "parts": [{"text": "NAYI KHABREN:\n" + "\n".join(lines)}]}],
@@ -95,8 +119,13 @@ def analyze(items):
         src = [items[i] for i in ids]
         news.append({
             "id": hashlib.sha1(o.get("title", "").encode()).hexdigest()[:12],
-            "title": o.get("title", ""), "summary": o.get("summary", ""), "detail": o.get("detail", ""),
+            "title": o.get("title", ""), "orig": src[0]["title"],
+            "summary": o.get("summary", ""), "detail": o.get("detail", ""),
             "market_move": o.get("market_move", ""),
+            "impact": o.get("impact", ""), "mood": o.get("mood", ""), "focus": o.get("focus", ""),
+            "scenario": o.get("scenario", ""),
+            "sentiment": "bear" if o.get("sentiment") == "bear" else "bull",
+            "importance": o.get("importance", 1),
             "sources": sorted({s["source"] for s in src}),
             "ts": max(s["ts"] for s in src).isoformat(),
             "link": src[0]["link"],
@@ -119,6 +148,10 @@ def main():
     new_items = [i for i in items if i["link"] not in set(seen)][:MAX_NEW]
     news = list(old.get("news", []))
     if new_items:
+        with ThreadPoolExecutor(8) as ex:
+            for it, t in zip(new_items, ex.map(lambda i: get_article(i["link"]), new_items)):
+                it["text"] = t
+        print("articles with text:", sum(1 for i in new_items if i.get("text")), "of", len(new_items))
         try:
             news = analyze(new_items) + news
             seen = (seen + [i["link"] for i in new_items])[-500:]

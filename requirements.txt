@@ -2,3 +2,4 @@ feedparser
 requests
 curl_cffi
 firebase-admin
+trafilatura
