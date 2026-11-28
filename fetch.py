@@ -1,5 +1,5 @@
 import os, re, json, hashlib, calendar
-from datetime import datetime, timezone, timedelta
+from datetime import datetime, timezone, timedelta, date
 from urllib.parse import quote
 
 from concurrent.futures import ThreadPoolExecutor
@@ -134,6 +134,95 @@ def analyze(items):
 
 
 
+FRED = "https://api.stlouisfed.org/fred"
+INDICATORS = [
+    {"name": "US CPI (mehngai)", "rel": 10, "series": "CPIAUCSL", "kind": "yoy", "st": 3,
+     "note": "Mehngai ka sabse bada number. Fed ki rate ka faisla isi par depend karta hai."},
+    {"name": "US PPI (producer prices)", "rel": 46, "series": "PPIFIS", "kind": "yoy", "st": 2,
+     "note": "Factory/producer level ki mehngai, CPI ka pehla ishara."},
+    {"name": "US Jobs report (Nonfarm Payrolls)", "rel": 50, "series": "PAYEMS", "kind": "jobs", "st": 3,
+     "note": "Mahine mein kitni nayi naukriyan bani aur berozgari ki rate."},
+    {"name": "US Retail Sales", "rel": 9, "series": "RSAFS", "kind": "mom", "st": 2,
+     "note": "Logon ki kharch karne ki taqat."},
+    {"name": "US GDP (growth)", "rel": 53, "series": "A191RL1Q225SBEA", "kind": "level", "st": 2,
+     "note": "Maeeshat kitni barh rahi hai (saalana raftaar)."},
+]
+
+
+def fred(path, **params):
+    params.update(api_key=os.environ["FRED_API_KEY"], file_type="json")
+    r = requests.get(f"{FRED}/{path}", params=params, timeout=20)
+    r.raise_for_status()
+    return r.json()
+
+
+def obs(series, n):
+    rows = fred("series/observations", series_id=series, sort_order="desc", limit=n)["observations"]
+    return [(o["date"], float(o["value"])) for o in rows if o["value"] not in (".", "")]
+
+
+def mon(d):
+    return datetime.strptime(d, "%Y-%m-%d").strftime("%b")
+
+
+def pct(a, b):
+    return (a / b - 1) * 100
+
+
+def values(ind):
+    k = ind["kind"]
+    s = obs(ind["series"], 16)
+    if k == "yoy":
+        mom = pct(s[0][1], s[1][1])
+        return (f"{pct(s[0][1], s[12][1]):.1f}% ({mon(s[0][0])})",
+                f"{pct(s[1][1], s[13][1]):.1f}% ({mon(s[1][0])})",
+                f"Pichle mahine se: {mom:+.1f}%")
+    if k == "jobs":
+        u = obs("UNRATE", 2)
+        return (f"{s[0][1] - s[1][1]:+.0f}K ({mon(s[0][0])})",
+                f"{s[1][1] - s[2][1]:+.0f}K ({mon(s[1][0])})",
+                f"Berozgari ki rate: {u[0][1]:.1f}%")
+    if k == "mom":
+        return (f"{pct(s[0][1], s[1][1]):+.1f}% ({mon(s[0][0])})",
+                f"{pct(s[1][1], s[2][1]):+.1f}% ({mon(s[1][0])})", "")
+    return f"{s[0][1]:.1f}% ({mon(s[0][0])})", f"{s[1][1]:.1f}% ({mon(s[1][0])})", ""
+
+
+def rel_dates(rid):
+    rows = fred("release/dates", release_id=rid, include_release_dates_with_no_data="true",
+                sort_order="desc", limit=24)["release_dates"]
+    return sorted(r["date"] for r in rows)
+
+
+def get_econ():
+    if not os.environ.get("FRED_API_KEY"):
+        return None
+    today = datetime.now(timezone.utc).date()
+    events, past = [], []
+    for ind in INDICATORS:
+        try:
+            latest, prev, extra = values(ind)
+            dates = rel_dates(ind["rel"])
+            ev = {"name": ind["name"], "st": ind["st"], "note": ind["note"],
+                  "latest": latest, "prev": prev, "extra": extra}
+            nxt = [d for d in dates if d >= today.isoformat()]
+            last = [d for d in dates if d < today.isoformat()]
+            if nxt:
+                events.append({**ev, "date": nxt[0]})
+            if last and (today - date.fromisoformat(last[-1])).days <= 35:
+                past.append({**ev, "date": last[-1]})
+        except Exception as e:
+            print("fred fail", ind["name"], e)
+    rate = ""
+    try:
+        rate = f"{obs('DFEDTARL', 1)[0][1]:.2f}% - {obs('DFEDTARU', 1)[0][1]:.2f}%"
+    except Exception as e:
+        print("fred rate fail", e)
+    events.sort(key=lambda x: x["date"])
+    past.sort(key=lambda x: x["date"], reverse=True)
+    return {"events": events, "past": past, "rate": rate, "at": datetime.now(timezone.utc).isoformat()}
+
+
 def main():
     cred = credentials.Certificate(json.loads(os.environ["FIREBASE_SERVICE_ACCOUNT"]))
     firebase_admin.initialize_app(cred)
@@ -142,6 +231,14 @@ def main():
     old = snap.to_dict() if snap.exists else {}
 
     prices = get_prices() or old.get("prices", [])
+
+    econ = old.get("econ")
+    try:
+        fresh = econ and (datetime.now(timezone.utc) - datetime.fromisoformat(econ["at"])) < timedelta(minutes=50)
+        if not fresh:
+            econ = get_econ() or econ
+    except Exception as e:
+        print("econ fail", e)
 
     seen = list(old.get("seen", []))
     items = get_items()
@@ -169,7 +266,7 @@ def main():
     news = list(uniq.values())[:KEEP_NEWS]
 
     ref.set({"updatedAt": datetime.now(timezone.utc).isoformat(),
-             "prices": prices, "news": news, "seen": seen})
+             "prices": prices, "news": news, "seen": seen, "econ": econ})
     print(f"ok: {len(prices)} prices, {len(news)} news, {len(new_items)} new items")
 
 

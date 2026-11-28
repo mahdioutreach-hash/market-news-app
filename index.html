@@ -119,6 +119,7 @@ body.talk .mouth{animation:talk .22s infinite alternate}
 .srcl{font-size:12px;color:var(--muted);margin-left:4px}
 .orig{font-size:12.5px;color:var(--muted);font-style:italic;margin:-4px 0 14px}
 .lnk{display:inline-block;margin:6px 0 0;font-weight:700;font-size:14px;color:var(--text);text-decoration:underline}
+.rate{background:var(--soft);border-radius:14px;padding:12px 14px;font-size:14px;margin:12px 0 4px;color:var(--muted)}.rate b{color:var(--text);margin-left:4px}
 .hint{background:var(--soft);border-radius:16px;padding:14px 16px;font-size:13.5px;color:var(--muted);margin-top:22px}
 @media (prefers-reduced-motion:reduce){*{animation-duration:.01ms!important;animation-delay:0s!important;transition:none!important}}
 </style>
@@ -142,15 +143,7 @@ body.talk .mouth{animation:talk .22s infinite alternate}
 </div></div>
 <script>
 var A=[],news=[],TF=["1W","1M"];
-var cal={
-today:[{n:"Fed Speaker bayan",time:"Aaj",t2:"8:30 PM",st:2,f:"-",p:"-",a:"-",note:"Koi bada data nahi, bayan se mood badal sakta hai."}],
-week:[{n:"US CPI (inflation)",time:"Mangal",t2:"5:30 PM",st:3,f:"3.1%",p:"3.2%",a:"-",note:"Mehngai ka sabse bada number."},
-{n:"US PPI (producer prices)",time:"Budh",t2:"5:30 PM",st:2,f:"2.4%",p:"2.5%",a:"-",note:"Factory level ki mehngai."},
-{n:"FOMC Minutes",time:"Budh",t2:"11:00 PM",st:3,f:"-",p:"-",a:"-",note:"Fed ki pichli meeting ki tafseel."},
-{n:"Retail Sales",time:"Jumeraat",t2:"5:30 PM",st:2,f:"0.3%",p:"0.1%",a:"-",note:"Logon ki kharch karne ki taqat."},
-{n:"Jobless Claims",time:"Jumeraat",t2:"5:30 PM",st:2,f:"225K",p:"231K",a:"-",note:"Naye berozgari claims."}],
-wk:[{n:"Fed officials ke bayan",time:"Weekend",t2:"Din bhar",st:1,f:"-",p:"-",a:"-",note:"Stocks band, lekin bayan se Monday ka mood banta hai."},
-{n:"Crypto weekend move",time:"Weekend",t2:"24/7",st:1,f:"-",p:"-",a:"-",note:"Kam volume mein tez moves ho sakte hain."}]};
+var cal={today:[],week:[],past:[]};
 var st={tab:"mkt",ct:1,hero:0,tf:0,chat:null,busy:false};
 function rng(a){return function(){a|=0;a=a+0x6D2B79F5|0;var t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
 function series(seed,up,n){var r=rng(seed),x=[],v=50;for(var i=0;i<n;i++){v+=(r()-.5)*7+(up?.9:-.9);x.push(v)}return x}
@@ -179,9 +172,10 @@ g.forEach(function(gr){var it=news.filter(function(n){return n.m>=gr[1]&&n.m<gr[
 h+='<div class="grp in" style="--i:'+(k++)+'">'+(gr[1]===0?"<i></i>":"")+gr[0]+'</div>';
 it.forEach(function(n){h+='<div class="nr in" style="--i:'+(k++)+'" data-news="'+n.id+'"><div class="meta">'+(n.m<60?'<span class="new">NEW</span>':"")+'<span>'+clock(n.m)+'</span><span>\u2022</span><span>'+ago(n.m)+'</span></div><h3>'+n.t+'</h3><p>'+n.s+'</p>'+(n.mm?'<p class="mm"><b>Khabar mein market:</b> '+n.mm+'</p>':'')+'<span class="tag '+n.type+'">'+(n.type==="bull"?"Bullish":"Bearish")+'</span> <span class="tag '+(n.imp==="Bohot Important"?"hi":"lo")+'">'+n.imp+'</span> <span class="srcl">'+n.src+'</span></div>'})});
 }else{
-var keys=["today","week","wk"],L=["Aaj","Is hafte","Weekend"],items=cal[keys[st.ct]];
-h+='<div class="tabs in" style="--n:3;--i:1">'+L.map(function(l,i){return '<button data-ct="'+i+'" class="'+(i===st.ct?"on":"")+'">'+l+'</button>'}).join("")+'<div class="bar" style="transform:translateX('+st.ct*100+'%)"></div></div>';
-h+=items.map(function(e,i){return '<div class="er in" style="--i:'+(i+2)+'" data-ev="'+keys[st.ct]+':'+i+'"><div class="et"><span>'+e.time+' • '+e.t2+'</span><span class="dots">'+dots(e.st)+'</span></div><h3>'+e.n+'</h3><p>'+e.note+'</p><div class="nm num"><div>Forecast<b>'+e.f+'</b></div><div>Pehle<b>'+e.p+'</b></div><div>Actual<b>'+e.a+'</b></div></div></div>'}).join("");
+var keys=["today","week","past"],L=["Aaj","Agle 7 din","Pichle"],items=cal[keys[st.ct]];
+h+=(st.rate?'<div class="rate in" style="--i:0">Fed ki maujooda rate <b>'+st.rate+'</b></div>':'')+'<div class="tabs in" style="--n:3;--i:1">'+L.map(function(l,i){return '<button data-ct="'+i+'" class="'+(i===st.ct?"on":"")+'">'+l+'</button>'}).join("")+'<div class="bar" style="transform:translateX('+st.ct*100+'%)"></div></div>';
+h+=items.map(function(e,i){return '<div class="er in" style="--i:'+(i+2)+'" data-ev="'+keys[st.ct]+':'+i+'"><div class="et"><span>'+e.time+' • '+e.t2+'</span><span class="dots">'+dots(e.st)+'</span></div><h3>'+e.n+'</h3><p>'+e.note+'</p><div class="nm num"><div>Taza<b>'+e.f+'</b></div><div>Pehle<b>'+e.p+'</b></div><div>Release<b>'+e.a+'</b></div></div></div>'}).join("");
+if(!items.length)h+='<div class="empty">Is waqt koi data nahi</div>';
 }
 v.innerHTML=h;
 if(st.tab==="mkt")countUp(document.getElementById("hp"),A[st.hero].v);
@@ -196,8 +190,8 @@ var bk=e.target.closest("[data-back]");if(bk){st.detail=null;render();return}var
 var n=e.target.closest("[data-news]");if(n){var it=news.filter(function(x){return x.id==n.dataset.news})[0];
 openSheet("Khabar",'<div class="art"><div class="meta"><span class="tag '+it.type+'">'+(it.type==="bull"?"Bullish":"Bearish")+'</span><span>'+clock(it.m)+' • '+ago(it.m)+'</span></div><h2>'+it.t+'</h2><p>'+it.s+'</p><div class="kv"><b>Impact</b>'+it.impact+'</div><div class="kv"><b>Market mood</b>'+it.mood+'</div><div class="kv"><b>Sabki nazar</b>'+it.focus+'</div><div class="kv"><b>Sources</b>'+it.src+'</div></div>',"KHABAR: "+it.t+". "+it.s+" Impact: "+it.impact+" Mood: "+it.mood+" Focus: "+it.focus+" Sources: "+it.src,["Tafseel se batao","Ye kya cheez hai?","Ye kyun hua?","Market kese move kar sakti hai?","Log kya expect kar rahe hain?"]);return}
 var ev=e.target.closest("[data-ev]");if(ev){var p=ev.dataset.ev.split(":"),x=cal[p[0]][+p[1]];
-openSheet("Economic data",'<div class="art"><div class="meta"><span>'+x.time+' • '+x.t2+'</span><span class="dots">'+dots(x.st)+'</span></div><h2>'+x.n+'</h2><p>'+x.note+'</p><div class="nm num"><div>Forecast<b>'+x.f+'</b></div><div>Pehle<b>'+x.p+'</b></div><div>Actual<b>'+x.a+'</b></div></div></div>',"ECONOMIC DATA: "+x.n+", waqt "+x.time+" "+x.t2+", forecast "+x.f+", pichla "+x.p+", actual "+x.a+". "+x.note,["Ye data kya hota hai?","Log kya expect kar rahe hain?","Forecast se zyada ya kam aaya to?","Gold, dollar, stocks par asar?","Aaj ke data ke chances kya hain?"])}});
-function allCtx(){return "KHABREN:\n"+news.map(function(n){return "- "+n.t+": "+n.s+" ("+n.impact+")"}).join("\n")+"\nDATA IS HAFTE:\n"+cal.week.map(function(e){return "- "+e.n+" "+e.time+" forecast "+e.f+" pehle "+e.p}).join("\n")+"\nPRICES:\n"+A.map(function(a){return "- "+a.n+" "+fmt(a.v)+" ("+a.c+"%)"}).join("\n")}
+openSheet("Economic data",'<div class="art"><div class="meta"><span>'+x.time+' • '+x.t2+'</span><span class="dots">'+dots(x.st)+'</span></div><h2>'+x.n+'</h2><p>'+x.note+'</p><div class="nm num"><div>Taza<b>'+x.f+'</b></div><div>Pehle<b>'+x.p+'</b></div><div>Release<b>'+x.a+'</b></div></div></div>',"ECONOMIC DATA: "+x.n+", waqt "+x.time+" "+x.t2+", forecast "+x.f+", pichla "+x.p+", actual "+x.a+". "+x.note,["Ye data kya hota hai?","Taza number ka kya matlab hai?","Gold, dollar, stocks par asar?","Aaj ke data ke chances kya hain?"])}});
+function allCtx(){return "KHABREN:\n"+news.map(function(n){return "- "+n.t+": "+n.s+" ("+n.impact+")"}).join("\n")+"\nDATA IS HAFTE:\n"+cal.week.map(function(e){return "- "+e.n+" "+e.time+" taza "+e.f+" pehle "+e.p}).join("\n")+"\nPRICES:\n"+A.map(function(a){return "- "+a.n+" "+fmt(a.v)+" ("+a.c+"%)"}).join("\n")}
 function openSheet(title,html,ctx,chips){st.chat={ctx:ctx,msgs:[]};document.getElementById("shT").textContent=title;document.getElementById("msgs").innerHTML=html;
 document.getElementById("chips").innerHTML=chips.map(function(x){return '<button class="chip">'+x+'</button>'}).join("");
 document.getElementById("scrim").classList.add("open");document.getElementById("sheet").classList.add("open");document.body.style.overflow="hidden"}
@@ -224,14 +218,18 @@ function pageInfo(){
 if(st.detail)return detailInfo();
 if(st.tab==="mkt"){var a=A[st.hero];return{name:"Market",tip:"Salaam! <b>"+a.n+"</b> aaj "+(a.c>=0?"+":"")+a.c.toFixed(2)+"% hai. Kisi asset par tap karo ya mujhse pucho.",chips:["Aaj market ka mood kya hai?","Gold kyun gir raha hai?","Bitcoin ka kya scene hai?"],ctx:"Banda abhi Market page par hai aur "+a.n+" ka chart dekh raha hai ("+TF[st.tf]+")."}}
 if(st.tab==="news"){var nw=news.filter(function(n){return n.m<60}).length;return{name:"Khabrein",tip:"Abhi <b>"+nw+" nayi khabar</b> hai. Kisi par tap karo, main samjhata hoon.",chips:["Aaj ki sabse badi khabar?","Market ka mood kya hai?","Kis cheez par nazar rakhun?"],ctx:"Banda abhi Khabrein page par hai (khabron ki timeline dekh raha hai)."}}
-var t=["Aaj koi bada data nahi, magar <b>Fed speaker</b> se mood badal sakta hai.","Is hafte ka sabse bada data <b>US CPI</b> hai. Pucho, log kya expect kar rahe hain.","Weekend par stocks band, lekin <b>crypto</b> chalta hai. Kuch pucho?"],nm=["Data (Aaj)","Data (Is hafte)","Data (Weekend)"];
+var t=["Aaj <b>"+cal.today.length+"</b> data aa raha hai.","Agle 7 din mein <b>"+cal.week.length+"</b> data aa raha hai. Pucho!","Ye pichle data ke numbers hain. Kuch samajhna ho to pucho."],nm=["Data (Aaj)","Data (Agle 7 din)","Data (Pichle)"];
 return{name:nm[st.ct],tip:t[st.ct],chips:["Is hafte ka sabse bada data?","CPI aaye to kya hoga?","Aaj kaunsa data aane ka chance hai?"],ctx:"Banda abhi economic Data page par hai, tab: "+nm[st.ct]+"."}}
+function buildCal(e){var td=new Date();td.setHours(0,0,0,0);var D=864e5;
+function mp(x){var dt=new Date(x.date+"T00:00:00"),ds=dt.toLocaleDateString([],{day:"numeric",month:"short"});return{n:x.name,time:dt.toLocaleDateString([],{weekday:"long"}),t2:ds,st:x.st,note:x.note+(x.extra?" \u2022 "+x.extra:""),f:x.latest||"-",p:x.prev||"-",a:ds,d:dt}}
+var m=(e.events||[]).map(mp);
+cal={today:m.filter(function(x){return +x.d===+td}),week:m.filter(function(x){return x.d>td&&x.d<=new Date(+td+7*D)}),past:(e.past||[]).map(mp)}}
 function curDetail(){var d=st.detail;if(d.k==="n")return news.filter(function(x){return x.id===d.id})[0];return cal[d.g][d.i]}
 function detailInfo(){var d=st.detail,x=curDetail();if(d.k==="n")return{name:x.t,tip:"Ye khabar samajh nahi aayi? <b>Mujhse pucho.</b>",chips:["Tafseel se batao","Ye kya cheez hai?","Ye kyun hua?","Market kese move kar sakti hai?","Log kya expect kar rahe hain?"],ctx:"Banda abhi is khabar ka page padh raha hai. KHABAR: "+x.t+". "+x.s+" "+x.long+" Market move (khabar ke mutabiq): "+(x.mm||"zikr nahi")+" Impact: "+x.impact+" Mood: "+x.mood+" Focus: "+x.focus+" Scenario: "+x.sc+" Sources: "+x.src};
 return{name:x.n,tip:"Ye data samajhna hai? <b>Mujhse pucho.</b>",chips:["Ye data kya hota hai?","Log kya expect kar rahe hain?","Forecast se zyada ya kam aaya to?","Gold, dollar, stocks par asar?"],ctx:"Banda abhi is economic data ka page padh raha hai. DATA: "+x.n+", waqt "+x.time+" "+x.t2+", forecast "+x.f+", pichla "+x.p+", actual "+x.a+". "+x.note}}
 function renderDetail(){var d=st.detail,x=curDetail(),h="";
 if(d.k==="n"){h='<div class="back in" data-back="1">\u2039 Khabrein</div><article class="pg art in" style="--i:1"><div class="meta"><span class="tag '+x.type+'">'+(x.type==="bull"?"Bullish":"Bearish")+'</span><span class="tag '+(x.imp==="Bohot Important"?"hi":"lo")+'">'+x.imp+'</span><span>'+clock(x.m)+' \u2022 '+ago(x.m)+'</span></div><h2>'+x.t+'</h2>'+(x.orig?'<div class="orig">'+x.orig+'</div>':'')+'<p class="lead">'+x.s+'</p>'+(x.long?x.long.split('\n').filter(Boolean).map(function(p){return '<p>'+p+'</p>'}).join(''):'')+(x.mm?'<div class="kv"><b>Khabar mein market ka move</b>'+x.mm+'</div>':'')+'<div class="kv"><b>Impact (andaza)</b>'+x.impact+'</div><div class="kv"><b>Market mood</b>'+x.mood+'</div><div class="kv"><b>Sabki nazar</b>'+x.focus+'</div><div class="kv"><b>Scenario (andaza)</b>'+x.sc+'</div><div class="kv"><b>Sources</b>'+x.src+'</div>'+(x.link?'<a class="lnk" href="'+x.link+'" target="_blank" rel="noopener">Asal khabar kholo \u203a</a>':'')+'<div class="hint">Kuch samajh nahi aaya? Robot par tap karo aur is khabar ke baare mein (ya kisi bhi cheez ke baare mein) pucho.</div></article>'}
-else{h='<div class="back in" data-back="1">\u2039 Data</div><article class="pg art in" style="--i:1"><div class="meta"><span>'+x.time+' \u2022 '+x.t2+'</span><span class="dots">'+dots(x.st)+'</span></div><h2>'+x.n+'</h2><p class="lead">'+x.note+'</p><div class="nm num"><div>Forecast<b>'+x.f+'</b></div><div>Pehle<b>'+x.p+'</b></div><div>Actual<b>'+x.a+'</b></div></div><div class="kv" style="margin-top:18px"><b>Scenario (andaza)</b>Actual number forecast se zyada aaye to dollar mazboot ho sakta hai aur gold/stocks par dabao aa sakta hai. Kam aaye to aksar ulta hota hai.</div><div class="hint">Kuch samajh nahi aaya? Robot par tap karo aur is data ke baare mein (ya kisi bhi cheez ke baare mein) pucho.</div></article>'}
+else{h='<div class="back in" data-back="1">\u2039 Data</div><article class="pg art in" style="--i:1"><div class="meta"><span>'+x.time+' \u2022 '+x.t2+'</span><span class="dots">'+dots(x.st)+'</span></div><h2>'+x.n+'</h2><p class="lead">'+x.note+'</p><div class="nm num"><div>Taza<b>'+x.f+'</b></div><div>Pehle<b>'+x.p+'</b></div><div>Release<b>'+x.a+'</b></div></div><div class="kv" style="margin-top:18px"><b>Scenario (andaza)</b>Agar naya number pichle ya umeed se zyada aaye to dollar mazboot ho sakta hai aur gold/stocks par dabao aa sakta hai. Kam aaye to aksar ulta hota hai (andaza).</div><div class="hint">Kuch samajh nahi aaya? Robot par tap karo aur is data ke baare mein (ya kisi bhi cheez ke baare mein) pucho.</div></article>'}
 document.getElementById("view").innerHTML=h;robotTip()}
 var tipTimer;
 function placeTip(){var t=document.getElementById("tip"),r=document.getElementById("fab").getBoundingClientRect(),right=(r.left+r.width/2)>innerWidth/2;if(r.top<120){t.style.bottom="auto";t.style.top=(r.bottom+8)+"px"}else{t.style.top="auto";t.style.bottom=(innerHeight-r.top+8)+"px"}if(right){t.style.left="auto";t.style.right=Math.max(8,innerWidth-r.right)+"px";t.style.transformOrigin="right bottom"}else{t.style.right="auto";t.style.left=Math.max(8,r.left)+"px";t.style.transformOrigin="left bottom"}}
@@ -249,7 +247,7 @@ render();
 var FS="https://firestore.googleapis.com/v1/projects/market-news-4b872/databases/(default)/documents/public/latest";
 function fv(v){if("stringValue" in v)return v.stringValue;if("integerValue" in v)return +v.integerValue;if("doubleValue" in v)return v.doubleValue;if("booleanValue" in v)return v.booleanValue;if("arrayValue" in v)return (v.arrayValue.values||[]).map(fv);if("mapValue" in v){var o={},f=v.mapValue.fields||{};for(var k in f)o[k]=fv(f[k]);return o}return null}
 async function load(){try{var r=await fetch(FS);if(!r.ok)throw new Error(r.status);var j=await r.json(),d={};for(var k in j.fields)d[k]=fv(j.fields[k]);
-A=d.prices||[];news=(d.news||[]).map(function(n){var m=Math.max(0,Math.round((Date.now()-new Date(n.ts))/60000));return{id:n.id,t:n.title,orig:n.orig||"",m:m,imp:n.importance>=3?"Bohot Important":n.importance===2?"Important":"Chhoti",type:n.sentiment==="bear"?"bear":"bull",s:n.summary,long:n.detail,mm:n.market_move||"",impact:n.impact,mood:n.mood,focus:n.focus,sc:n.scenario,src:(n.sources||[]).join(", "),link:n.link||""}});st.updated=d.updatedAt;st.err=null}catch(e){st.err="Data load nahi hua. Internet check karo."}
+A=d.prices||[];news=(d.news||[]).map(function(n){var m=Math.max(0,Math.round((Date.now()-new Date(n.ts))/60000));return{id:n.id,t:n.title,orig:n.orig||"",m:m,imp:n.importance>=3?"Bohot Important":n.importance===2?"Important":"Chhoti",type:n.sentiment==="bear"?"bear":"bull",s:n.summary,long:n.detail,mm:n.market_move||"",impact:n.impact,mood:n.mood,focus:n.focus,sc:n.scenario,src:(n.sources||[]).join(", "),link:n.link||""}});st.updated=d.updatedAt;buildCal(d.econ||{});st.rate=(d.econ&&d.econ.rate)||"";st.err=null}catch(e){st.err="Data load nahi hua. Internet check karo."}
 render()}
 setInterval(function(){if(!document.hidden)load()},300000);
 load();
